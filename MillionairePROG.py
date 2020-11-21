@@ -53,6 +53,26 @@ def convertVar(var, datatype):
     except:
         return var
 
+def EncoderTool(endecode, encodeType, value):
+    import base64
+    if (endecode == "encode"):
+        if (encodeType == "base64"):
+            value_bytes = EncoderTool("encode", "UTF-8", value)
+            base64_bytes = base64.b64encode(value_bytes)
+            value_base64 = EncoderTool("decode", "UTF-8", base64_bytes)
+            return value_base64
+        else:
+            return value.encode(encoding=encodeType, errors='strict')
+    elif (endecode == "decode"):
+        if (encodeType == "base64"):
+            base64_bytes = EncoderTool("encode", "UTF-8", value)
+            value_bytes = base64.b64decode(base64_bytes)
+            value_text = EncoderTool("decode", "UTF-8", value_bytes)
+            return value_text
+        else:
+            return value.decode(encoding=encodeType, errors='strict')
+    else:
+        return value
 
 def main():
     while(True):
@@ -66,5 +86,7 @@ def main():
             # Should never occue
             continue
     print("Game, Start!")
+    encode = EncoderTool("decode", "base64", "RGF2aWQ=")
+    print(encode)
 
 main()

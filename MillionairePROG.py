@@ -4,8 +4,7 @@
 from time import sleep
 from sys import exit
 from os import path
-
-csv_questions = []
+from random import randrange
 
 def clearScreen():
     from os import system, name
@@ -103,23 +102,14 @@ def EncoderTool(endecode, encodeType, value = "./questions", returnWhere = "memo
 
 def loadQuestions():
     # Load file in memory: https://stackoverflow.com/a/17767445
-    clearScreen()
     import csv
     if (path.exists("./questions.bin")):
         in_memory_file = EncoderTool("decode", "csv")
-        csv_questions = csv.reader(in_memory_file.splitlines(), delimiter=",", quotechar="|")
-
-        # Test start
-        # TODO: ignore row[0] - it is used as a header of the table
-        for row in csv_questions:
-            string_no_quotation_marks = row[0][1:-1]
-            print(string_no_quotation_marks)
-        # Test end
-
-        print("Game, Start!")
+        return list(csv.reader(in_memory_file.splitlines(), delimiter=",", quotechar="|"))
     else:
+        clearScreen()
         print("Otázky nejsou k nalezení! Je třeba je nejprve importovat.")
-    sleep(3)
+        sleep(3)
 
 def convertQuestions():
     clearScreen()
@@ -131,12 +121,36 @@ def convertQuestions():
         print("Soubor questions.csv neexistuje!")
     sleep(3)
 
+def getQuestion():
+    csv_questions = loadQuestions()
+    randomQuestionNumber = randrange(1, len(csv_questions))
+    return csv_questions[randomQuestionNumber]
+
 def loadTheGame():
-    loadQuestions()
+    clearScreen()
+    print("Game, Start!")
+    sleep(3)
+    clearScreen()
+
+    score = 0
+    numberOfQuestions = 10
+    for questionNumber in range(1, numberOfQuestions + 1):
+        questionData = getQuestion()
+        questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d"], outputType = str)
+        if ("\"" + questionAnswer + "\"" == questionData[5]):
+            score += 1
+    clearScreen()
+    percentValue = (score / numberOfQuestions) * 100
     
-    #encode = EncoderTool("decode", "base64", "RGF2aWQ=")
-    #print(encode)
-    
+    if (percentValue.is_integer()):
+        # If the float is an integer, cut the decimal places
+        percentValue = int(percentValue)
+    else:
+        # If not, round it to two decimal places
+        percentValue = round(percentValue, 2)
+
+    print(f"Výsledky:\r\n\r\nPočet bodů: {score}\r\nÚspěšnost: {percentValue}%")
+    input("Press ENTER to continue...")
 
 def main():
     while(True):

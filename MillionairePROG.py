@@ -6,6 +6,12 @@ from sys import exit
 from os import path
 from random import randrange
 
+questions_filename = "./questions"
+questions_encoded_ext = ".bin"
+questions_decoded_ext = ".csv"
+questions_encoded = questions_filename + questions_encoded_ext
+questions_decoded = questions_filename + questions_decoded_ext
+
 def clearScreen():
     from os import system, name
     if name == 'nt':
@@ -55,7 +61,7 @@ def convertVar(var, datatype):
     except:
         return var
 
-def EncoderTool(endecode, encodeType, value = "./questions", returnWhere = "memory"):
+def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="memory"):
     import base64
     if (endecode == "encode"):
         if (encodeType == "base64"):
@@ -65,14 +71,14 @@ def EncoderTool(endecode, encodeType, value = "./questions", returnWhere = "memo
             return value_base64
         elif (encodeType == "csv"):
             # value = "./questions"
-            with open(value + ".csv", 'r', encoding="utf-8") as csv_file:
+            with open(value + questions_decoded_ext, 'r', encoding="utf-8") as csv_file:
                 in_memory_file = csv_file.read()
                 encoded_file = EncoderTool("encode", "base64", in_memory_file)
                 if (returnWhere == "memory"):
                     return encoded_file
                 elif (returnWhere == "file"):
-                    # value = ./questions
-                    with open(value + ".bin", 'w', encoding="utf-8") as bin_file:
+                    # value = "./questions"
+                    with open(value + questions_encoded_ext, 'w', encoding="utf-8") as bin_file:
                         bin_file.writelines(encoded_file)
             return
         else:
@@ -84,15 +90,15 @@ def EncoderTool(endecode, encodeType, value = "./questions", returnWhere = "memo
             value_text = EncoderTool("decode", "utf-8", value_bytes)
             return value_text
         elif (encodeType == "csv"):
-            # value = ./questions
-            with open(value + ".bin", 'r', encoding="utf-8") as bin_file:
+            # value = "./questions"
+            with open(value + questions_encoded_ext, 'r', encoding="utf-8") as bin_file:
                 in_memory_file = bin_file.read()
                 decoded_file = EncoderTool("decode", "base64", in_memory_file)
                 if (returnWhere == "memory"):
                     return decoded_file
                 elif (returnWhere == "file"):
-                    # ./questions
-                    with open(value + ".csv", 'w', encoding="utf-8") as csv_file:
+                    # "./questions"
+                    with open(value + questions_decoded_ext, 'w', encoding="utf-8") as csv_file:
                         csv_file.writelines(decoded_file)
             return
         else:
@@ -103,26 +109,38 @@ def EncoderTool(endecode, encodeType, value = "./questions", returnWhere = "memo
 def loadQuestions():
     # Load file in memory: https://stackoverflow.com/a/17767445
     import csv
-    if (path.exists("./questions.bin")):
+    if (path.exists(questions_encoded)):
         in_memory_file = EncoderTool("decode", "csv")
         return list(csv.reader(in_memory_file.splitlines(), delimiter="¤", quotechar="|"))
     else:
-        clearScreen()
-        print("Otázky nejsou k nalezení! Je třeba je nejprve importovat.")
-        sleep(3)
+        if (convertQuestions("Program ztratil přístup k otázkám!")):
+            return loadQuestions()
+        else:
+            return False
 
-def convertQuestions():
+def convertQuestions(errtext = "Nelze načíst otázky."):
     clearScreen()
-    if (path.exists("./questions.csv")):
-        print("Probíhá importování otázek ze souboru questions.csv")
-        EncoderTool("encode", "csv", "./questions", "file")
-        print("Import dokončen")
+    if (path.exists(questions_decoded)):
+        print(f"Probíhá importování otázek ze souboru '{questions_decoded}'...")
+        EncoderTool("encode", "csv", questions_filename, "file")
+        print("Import dokončen!")
+        sleep(3)
+        return True
     else:
-        print("Soubor questions.csv neexistuje!")
-    sleep(3)
+        while (True):
+            clearScreen()
+            errchoice = choice([f"ERROR: {errtext}", f"Vložte '{questions_encoded}' nebo '{questions_decoded}' a stiskněte ENTER...", "Pro navrácení do menu zvolte napište EXIT."], ["", "EXIT"], str, False)
+            if (errchoice == "exit"): return False
+            
+            if (path.exists(questions_encoded)):
+                return True
+            elif (path.exists(questions_decoded)):
+                if (convertQuestions(f"Soubor s otázkami neexistuje!")):
+                    return True
 
 def getQuestion():
     csv_questions = loadQuestions()
+    if (csv_questions == False): return False
     randomQuestionNumber = randrange(1, len(csv_questions))
 
     # Remove the quotation marks around the strings
@@ -132,19 +150,31 @@ def getQuestion():
 
 def loadTheGame():
     clearScreen()
+    if not (path.exists(questions_encoded)):
+        if (path.exists(questions_decoded)):
+            if not (convertQuestions()): return
+        else:
+            if not (convertQuestions(f"Otázky nejsou k nalezení! Je třeba je nejprve importovat ze souboru '{questions_decoded}'.")): return
+        clearScreen()
     print("Game, Start!")
     sleep(3)
     clearScreen()
 
     score = 0
+    answeredQuestions = 0
     numberOfQuestions = 10
     for questionNumber in range(1, numberOfQuestions + 1):
         questionData = getQuestion()
-        questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d"], outputType = str)
-        if (questionAnswer == questionData[5]):
-            score += 1
+        if (questionData == False): return
+        questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d", "exit"], outputType = str)
+        if not (questionAnswer == "exit"):
+            answeredQuestions = questionNumber
+            if (questionAnswer == questionData[5]):
+                score += 1
+        else: break
     clearScreen()
-    percentValue = (score / numberOfQuestions) * 100
+    if (answeredQuestions == 0): return
+    percentValue = (score / answeredQuestions) * 100
     
     if (percentValue.is_integer()):
         # If the float is an integer, cut the decimal places
@@ -153,8 +183,9 @@ def loadTheGame():
         # If not, round it to two decimal places
         percentValue = round(percentValue, 2)
 
-    print(f"Výsledky:\r\n\r\nPočet bodů: {score}\r\nÚspěšnost: {percentValue}%")
+    print(f"Výsledky:\r\n\r\nPočet bodů: {score}/{answeredQuestions}\r\nÚspěšnost: {percentValue}%")
     input("Press ENTER to continue...")
+    return
 
 def main():
     while(True):

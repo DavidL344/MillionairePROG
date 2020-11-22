@@ -59,40 +59,40 @@ def EncoderTool(endecode, encodeType, value = "./questions", returnWhere = "memo
     import base64
     if (endecode == "encode"):
         if (encodeType == "base64"):
-            value_bytes = EncoderTool("encode", "UTF-8", value)
+            value_bytes = EncoderTool("encode", "utf-8", value)
             base64_bytes = base64.b64encode(value_bytes)
-            value_base64 = EncoderTool("decode", "UTF-8", base64_bytes)
+            value_base64 = EncoderTool("decode", "utf-8", base64_bytes)
             return value_base64
         elif (encodeType == "csv"):
             # value = "./questions"
-            with open(value + ".csv", 'r') as csv_file:
+            with open(value + ".csv", 'r', encoding="utf-8") as csv_file:
                 in_memory_file = csv_file.read()
                 encoded_file = EncoderTool("encode", "base64", in_memory_file)
                 if (returnWhere == "memory"):
                     return encoded_file
                 elif (returnWhere == "file"):
                     # value = ./questions
-                    with open(value + ".bin", 'w') as bin_file:
+                    with open(value + ".bin", 'w', encoding="utf-8") as bin_file:
                         bin_file.writelines(encoded_file)
             return
         else:
             return value.encode(encoding=encodeType, errors='strict')
     elif (endecode == "decode"):
         if (encodeType == "base64"):
-            base64_bytes = EncoderTool("encode", "UTF-8", value)
+            base64_bytes = EncoderTool("encode", "utf-8", value)
             value_bytes = base64.b64decode(base64_bytes)
-            value_text = EncoderTool("decode", "UTF-8", value_bytes)
+            value_text = EncoderTool("decode", "utf-8", value_bytes)
             return value_text
         elif (encodeType == "csv"):
             # value = ./questions
-            with open(value + ".bin", 'r') as bin_file:
+            with open(value + ".bin", 'r', encoding="utf-8") as bin_file:
                 in_memory_file = bin_file.read()
                 decoded_file = EncoderTool("decode", "base64", in_memory_file)
                 if (returnWhere == "memory"):
                     return decoded_file
                 elif (returnWhere == "file"):
                     # ./questions
-                    with open(value + ".csv", 'w') as csv_file:
+                    with open(value + ".csv", 'w', encoding="utf-8") as csv_file:
                         csv_file.writelines(decoded_file)
             return
         else:
@@ -105,7 +105,7 @@ def loadQuestions():
     import csv
     if (path.exists("./questions.bin")):
         in_memory_file = EncoderTool("decode", "csv")
-        return list(csv.reader(in_memory_file.splitlines(), delimiter=",", quotechar="|"))
+        return list(csv.reader(in_memory_file.splitlines(), delimiter="¤", quotechar="|"))
     else:
         clearScreen()
         print("Otázky nejsou k nalezení! Je třeba je nejprve importovat.")
@@ -124,6 +124,10 @@ def convertQuestions():
 def getQuestion():
     csv_questions = loadQuestions()
     randomQuestionNumber = randrange(1, len(csv_questions))
+
+    # Remove the quotation marks around the strings
+    for i in range(len(csv_questions[randomQuestionNumber])):
+        csv_questions[randomQuestionNumber][i] = csv_questions[randomQuestionNumber][i][1:-1]
     return csv_questions[randomQuestionNumber]
 
 def loadTheGame():
@@ -137,7 +141,7 @@ def loadTheGame():
     for questionNumber in range(1, numberOfQuestions + 1):
         questionData = getQuestion()
         questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d"], outputType = str)
-        if ("\"" + questionAnswer + "\"" == questionData[5]):
+        if (questionAnswer == questionData[5]):
             score += 1
     clearScreen()
     percentValue = (score / numberOfQuestions) * 100

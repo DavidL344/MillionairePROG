@@ -3,7 +3,7 @@
 
 from time import sleep
 from sys import exit
-from os import path
+from os import path, remove
 from random import randrange
 
 questions_filename = "./questions"
@@ -164,7 +164,15 @@ def loadTheGame():
     answeredQuestions = 0
     numberOfQuestions = 10
     for questionNumber in range(1, numberOfQuestions + 1):
-        questionData = getQuestion()
+        try: questionData = getQuestion()
+        except:
+            rebuildFile = choice(["Vypadá to, že soubor je poškozený. Chcete ho smazat a pokusit se ho znovu importovat (ano/ne)?"], ["ano", "ne", "exit"], str)
+            if (rebuildFile == "ano"):
+                remove(questions_encoded)
+                if (convertQuestions()):
+                    questionData = getQuestion()
+                else: return
+            else: return
         if (questionData == False): return
         questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d", "exit"], outputType = str)
         if not (questionAnswer == "exit"):

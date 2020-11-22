@@ -1,0 +1,12 @@
+# Archived data
+[Aa]rchive/
+
+# PyInstaller build data
+__pycache__/
+build/
+dist/
+*.spec
+
+# Questions
+questions*.csv
+questions*.bin

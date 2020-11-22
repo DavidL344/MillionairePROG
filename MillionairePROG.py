@@ -97,7 +97,7 @@ def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="mem
                 if (returnWhere == "memory"):
                     return decoded_file
                 elif (returnWhere == "file"):
-                    # "./questions"
+                    # value = "./questions"
                     with open(value + questions_decoded_ext, 'w', encoding="utf-8") as csv_file:
                         csv_file.writelines(decoded_file)
             return
@@ -189,10 +189,10 @@ def loadTheGame():
 
 def main():
     while(True):
-        menu = choice(["Kdo chce být milionářem - PROG edition\r\n", "1 - Hrát\r\n2 - Odejít\r\n# - Importovat otázky"], ['1', '2', '#'], str)
+        menu = choice(["Kdo chce být milionářem - PROG edition\r\n", "1 - Hrát\r\n2 - Odejít\r\n# - Importovat otázky"], ['1', '2', '#', "exit"], str)
         if (menu == '1'):
             loadTheGame()
-        elif (menu == '2'):
+        elif (menu == '2') or (menu == "exit"):
             exit(0)
         elif (menu == '#'):
             convertQuestions()

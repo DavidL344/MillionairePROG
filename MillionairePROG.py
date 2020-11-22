@@ -111,7 +111,7 @@ def loadQuestions():
     import csv
     if (path.exists(questions_encoded)):
         in_memory_file = EncoderTool("decode", "csv")
-        return list(csv.reader(in_memory_file.splitlines(), delimiter="¤", quotechar="|"))
+        return list(csv.reader(in_memory_file.splitlines(), delimiter="¤", quotechar="|", escapechar="\\"))
     else:
         if (convertQuestions("Program ztratil přístup k otázkám!")):
             return loadQuestions()

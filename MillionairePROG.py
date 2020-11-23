@@ -12,6 +12,10 @@ questions_decoded_ext = ".csv"
 questions_encoded = questions_filename + questions_encoded_ext
 questions_decoded = questions_filename + questions_decoded_ext
 
+# pip install cryptography
+# python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+crypt_key = "li_CR6HR4m4uyTaWPPoD90rfbUrHjBvN0jq0ERrcspA="
+
 def clearScreen():
     from os import system, name
     if name == 'nt':
@@ -67,8 +71,10 @@ def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="mem
         if (encodeType == "base64"):
             value_bytes = EncoderTool("encode", "utf-8", value)
             base64_bytes = base64.b64encode(value_bytes)
-            value_base64 = EncoderTool("decode", "utf-8", base64_bytes)
-            return value_base64
+            base64_bytes_encrypted = EncoderTool("crypt", "encrypt", base64_bytes)
+
+            value_encrypted = EncoderTool("decode", "utf-8", base64_bytes_encrypted)
+            return value_encrypted
         elif (encodeType == "csv"):
             # value = "./questions"
             with open(value + questions_decoded_ext, 'r', encoding="utf-8") as csv_file:
@@ -85,8 +91,10 @@ def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="mem
             return value.encode(encoding=encodeType, errors='strict')
     elif (endecode == "decode"):
         if (encodeType == "base64"):
-            base64_bytes = EncoderTool("encode", "utf-8", value)
-            value_bytes = base64.b64decode(base64_bytes)
+            value_bytes_encrypted = EncoderTool("encode", "utf-8", value)
+            value_bytes_decrypted = EncoderTool("crypt", "decrypt", value_bytes_encrypted)
+            value_bytes = base64.b64decode(value_bytes_decrypted)
+            
             value_text = EncoderTool("decode", "utf-8", value_bytes)
             return value_text
         elif (encodeType == "csv"):
@@ -103,6 +111,14 @@ def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="mem
             return
         else:
             return value.decode(encoding=encodeType, errors='strict')
+    elif (endecode == "crypt"):
+        from cryptography.fernet import Fernet
+        if (encodeType == "encrypt"):
+            return Fernet(crypt_key).encrypt(value)
+        elif (encodeType == "decrypt"):
+            return Fernet(crypt_key).decrypt(value)
+        else:
+            return value
     else:
         return value
 

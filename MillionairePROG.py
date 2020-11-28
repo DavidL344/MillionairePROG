@@ -185,13 +185,6 @@ def loadTheGame():
         else:
             if not (convertQuestions(f"Otázky nejsou k nalezení! Je třeba je nejprve importovat ze souboru '{questions_decoded}'.")): return
         clearScreen()
-    print("Game, Start!")
-    sleep(3)
-    clearScreen()
-
-    score = 0
-    answeredQuestions = 0
-    numberOfQuestions = 10
 
     try:
         # Load the questions at the beginning to prevent question injection later on that could manipulate the results
@@ -208,6 +201,29 @@ def loadTheGame():
                     input("Press ENTER to continue...")
             else: return
         else: return
+
+    while(True):
+        clearScreen()
+        try:
+            # The first line in csv_questions doesn't contain a question
+            csv_questions_truelength = len(csv_questions) - 1
+
+            numberOfQuestions = input(f"Maximální počet otázek (1-{csv_questions_truelength}): ")
+            if (numberOfQuestions.lower() == "exit"): return
+            numberOfQuestions = int(numberOfQuestions)
+            
+            # The length doesn't actually have to be sanitized - the quiz will end automatically once there are no unanswered questions
+            if (numberOfQuestions > 0) and (numberOfQuestions <= csv_questions_truelength):
+                score = 0
+                answeredQuestions = 0
+                break
+            else: continue
+        except: continue
+
+    clearScreen()
+    print("Game, Start!")
+    sleep(3)
+    clearScreen()
 
     # Add all the question numbers to the list
     remainingQuestions = []

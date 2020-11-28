@@ -5,6 +5,7 @@ from time import sleep
 from sys import exit
 from os import path, remove
 from random import randrange
+from random import choice as randchoice
 
 questions_filename = "./questions"
 questions_encoded_ext = ".bin"
@@ -154,15 +155,27 @@ def convertQuestions(errtext = "Nelze načíst otázky."):
                 if (convertQuestions(f"Soubor s otázkami neexistuje!")):
                     return True
 
-def getQuestion():
-    csv_questions = loadQuestions()
+def getQuestion(csv_questions, availableQuestions = []):
     if (csv_questions == False): return False
-    randomQuestionNumber = randrange(1, len(csv_questions))
+
+    # If availableQuestions variable is set to None, the question is picked regardless of the already used questions
+    if (availableQuestions == None): randomQuestionNumber = randrange(1, len(csv_questions))
+    elif (isinstance(availableQuestions, list)):
+        if (len(availableQuestions) > 0):
+            randomQuestionNumber = randchoice(availableQuestions)
+        else:
+            # There are no more available questions to use
+            return True
+    else:
+        # The availableQuestions is neither None nor a list
+        return False
 
     # Remove the quotation marks around the strings
     for i in range(len(csv_questions[randomQuestionNumber])):
         csv_questions[randomQuestionNumber][i] = csv_questions[randomQuestionNumber][i][1:-1]
-    return csv_questions[randomQuestionNumber]
+    
+    # Return the question number as well as the question data
+    return [randomQuestionNumber, csv_questions[randomQuestionNumber]]
 
 def loadTheGame():
     clearScreen()
@@ -179,16 +192,47 @@ def loadTheGame():
     score = 0
     answeredQuestions = 0
     numberOfQuestions = 10
-    for questionNumber in range(1, numberOfQuestions + 1):
-        try: questionData = getQuestion()
-        except:
-            rebuildFile = choice(["Vypadá to, že soubor je poškozený. Chcete ho smazat a pokusit se ho znovu importovat (ano/ne)?"], ["ano", "ne", "exit"], str)
-            if (rebuildFile == "ano"):
-                remove(questions_encoded)
-                if (convertQuestions()):
-                    questionData = getQuestion()
-                else: return
+
+    try:
+        # Load the questions at the beginning to prevent question injection later on that could manipulate the results
+        csv_questions = loadQuestions()
+    except:
+        rebuildFile = choice(["Vypadá to, že soubor je poškozený. Chcete ho smazat a pokusit se ho znovu importovat (ano/ne)?"], ["ano", "ne", "exit"], str)
+        if (rebuildFile == "ano"):
+            remove(questions_encoded)
+            if (convertQuestions()):
+                try:
+                    csv_questions = loadQuestions()
+                except:
+                    print("ERROR: Po úspěšné konverzi není možné se souborem pracovat.")
+                    input("Press ENTER to continue...")
             else: return
+        else: return
+
+    # Add all the question numbers to the list
+    remainingQuestions = []
+    for x in range(1, len(csv_questions)):
+        remainingQuestions.append(x)
+
+    for questionNumber in range(1, numberOfQuestions + 1):
+        if not (csv_questions == False):
+            returnedQuestion = getQuestion(csv_questions, remainingQuestions)
+            if (returnedQuestion == True):
+                # There are no more questions in the file
+                endingScreen(answeredQuestions, score)
+                return
+            elif (returnedQuestion == False):
+                # The app just checked that the csv_questions are loaded (and therefore cannot be False)
+                # This is here just in case something gets terribly wrong and I don't want the app to crash
+                return
+            else:
+                remainingQuestions.remove(returnedQuestion[0])
+                questionData = returnedQuestion[1]
+        else:
+            # Questions failed to load from memory even though they were just successfully loaded from the file
+            # Therefore, this should never occur
+            return
+            
         if (questionData == False): return
         questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d", "exit"], outputType = str)
         if not (questionAnswer == "exit"):
@@ -196,6 +240,10 @@ def loadTheGame():
             if (questionAnswer == questionData[5]):
                 score += 1
         else: break
+    endingScreen(answeredQuestions, score)
+    return
+
+def endingScreen(answeredQuestions = 0, score = 0):
     clearScreen()
     if (answeredQuestions == 0): return
     percentValue = (score / answeredQuestions) * 100

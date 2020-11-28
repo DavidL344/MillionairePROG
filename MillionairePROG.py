@@ -26,6 +26,10 @@ def clearScreen():
         # MacOS or GNU/Linux
         _ = system('clear')
 
+def pause(text = "\r\nPress ENTER to continue..."):
+    input(text)
+    return
+
 def choice(textlines = [], choiceList = [], outputType = int, caseSensitive = False):
     while (True):
         clearScreen()
@@ -197,8 +201,10 @@ def loadTheGame():
                 try:
                     csv_questions = loadQuestions()
                 except:
+                    clearScreen()
                     print("ERROR: Po úspěšné konverzi není možné se souborem pracovat.")
-                    input("Press ENTER to continue...")
+                    pause()
+                    return
             else: return
         else: return
 
@@ -272,7 +278,7 @@ def endingScreen(answeredQuestions = 0, score = 0):
         percentValue = round(percentValue, 2)
 
     print(f"Výsledky:\r\n\r\nPočet bodů: {score}/{answeredQuestions}\r\nÚspěšnost: {percentValue}%")
-    input("Press ENTER to continue...")
+    pause()
     return
 
 def main():

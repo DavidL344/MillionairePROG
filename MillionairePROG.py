@@ -26,7 +26,7 @@ def clearScreen():
         # MacOS or GNU/Linux
         _ = system('clear')
 
-def pause(text = "\r\nPress ENTER to continue..."):
+def pause(text = "\r\nPokračujte stisknutím klávesy Enter..."):
     input(text)
     return
 
@@ -81,14 +81,12 @@ def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="mem
             value_encrypted = EncoderTool("decode", "utf-8", base64_bytes_encrypted)
             return value_encrypted
         elif (encodeType == "csv"):
-            # value = "./questions"
             with open(value + questions_decoded_ext, 'r', encoding="utf-8") as csv_file:
                 in_memory_file = csv_file.read()
                 encoded_file = EncoderTool("encode", "base64", in_memory_file)
                 if (returnWhere == "memory"):
                     return encoded_file
                 elif (returnWhere == "file"):
-                    # value = "./questions"
                     with open(value + questions_encoded_ext, 'w', encoding="utf-8") as bin_file:
                         bin_file.writelines(encoded_file)
             return
@@ -103,14 +101,12 @@ def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="mem
             value_text = EncoderTool("decode", "utf-8", value_bytes)
             return value_text
         elif (encodeType == "csv"):
-            # value = "./questions"
             with open(value + questions_encoded_ext, 'r', encoding="utf-8") as bin_file:
                 in_memory_file = bin_file.read()
                 decoded_file = EncoderTool("decode", "base64", in_memory_file)
                 if (returnWhere == "memory"):
                     return decoded_file
                 elif (returnWhere == "file"):
-                    # value = "./questions"
                     with open(value + questions_decoded_ext, 'w', encoding="utf-8") as csv_file:
                         csv_file.writelines(decoded_file)
             return
@@ -150,7 +146,7 @@ def convertQuestions(errtext = "Nelze načíst otázky."):
     else:
         while (True):
             clearScreen()
-            errchoice = choice([f"ERROR: {errtext}", f"Vložte '{questions_encoded}' nebo '{questions_decoded}' a stiskněte ENTER...", "Pro navrácení do menu zvolte napište EXIT."], ["", "EXIT"], str, False)
+            errchoice = choice([f"Chyba: {errtext}", f"Vložte '{questions_encoded}' nebo '{questions_decoded}' a stiskněte ENTER...", "Pro navrácení do menu napište EXIT."], ["", "EXIT"], str, False)
             if (errchoice == "exit"): return False
             
             if (path.exists(questions_encoded)):
@@ -202,7 +198,7 @@ def loadTheGame():
                     csv_questions = loadQuestions()
                 except:
                     clearScreen()
-                    print("ERROR: Po úspěšné konverzi není možné se souborem pracovat.")
+                    print("Chyba: Po úspěšné konverzi není možné se souborem pracovat.")
                     pause()
                     return
             else: return
@@ -256,7 +252,7 @@ def loadTheGame():
             return
             
         if (questionData == False): return
-        questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d", "exit"], outputType = str)
+        questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]\r\n", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d", "exit"], outputType = str)
         if not (questionAnswer == "exit"):
             answeredQuestions = questionNumber
             if (questionAnswer == questionData[5]):

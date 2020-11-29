@@ -189,6 +189,17 @@ def loadTheGame():
     try:
         # Load the questions at the beginning to prevent question injection later on that could manipulate the results
         csv_questions = loadQuestions()
+
+        # Locate the messages in the header of the file
+        header_0 = getQuestion(csv_questions, [0])[1]
+        header_data = [
+            header_0[0], # The greeting message
+            header_0[1], # Result: 100-87%
+            header_0[2], # Result: 86-73%
+            header_0[3], # Result: 72-58%
+            header_0[4], # Result: 57-44%
+            header_0[5]  # Result: 43-0%
+        ]
     except:
         rebuildFile = choice(["Vypadá to, že soubor je poškozený. Chcete ho smazat a pokusit se ho znovu importovat (ano/ne)?"], ["ano", "ne", "exit"], str)
         if (rebuildFile == "ano"):
@@ -210,7 +221,7 @@ def loadTheGame():
             # The first line in csv_questions doesn't contain a question
             csv_questions_truelength = len(csv_questions) - 1
 
-            numberOfQuestions = input(f"Maximální počet otázek (1-{csv_questions_truelength}): ")
+            numberOfQuestions = input(f"Počet položených otázek (1-{csv_questions_truelength}): ")
             if (numberOfQuestions.lower() == "exit"): return
             numberOfQuestions = int(numberOfQuestions)
             
@@ -223,7 +234,7 @@ def loadTheGame():
         except: continue
 
     clearScreen()
-    print("Game, Start!")
+    print(header_data[0])
     sleep(3)
     clearScreen()
 
@@ -237,7 +248,7 @@ def loadTheGame():
             returnedQuestion = getQuestion(csv_questions, remainingQuestions)
             if (returnedQuestion == True):
                 # There are no more questions in the file
-                endingScreen(answeredQuestions, score)
+                endingScreen(header_data, answeredQuestions, score)
                 return
             elif (returnedQuestion == False):
                 # The app just checked that the csv_questions are loaded (and therefore cannot be False)
@@ -258,14 +269,21 @@ def loadTheGame():
             if (questionAnswer == questionData[5]):
                 score += 1
         else: break
-    endingScreen(answeredQuestions, score)
+    endingScreen(header_data, answeredQuestions, score)
     return
 
-def endingScreen(answeredQuestions = 0, score = 0):
+def endingScreen(header_data, answeredQuestions = 0, score = 0):
     clearScreen()
     if (answeredQuestions == 0): return
     percentValue = (score / answeredQuestions) * 100
-    
+
+    if (100 >= percentValue >= 87): result_message = header_data[1] # Result: 100-87%
+    elif (87 > percentValue >= 73): result_message = header_data[2] # Result: 86-73%
+    elif (73 > percentValue >= 58): result_message = header_data[3] # Result: 72-58%
+    elif (58 > percentValue >= 44): result_message = header_data[4] # Result: 57-44%
+    elif (44 > percentValue >= 0): result_message = header_data[5] # Result: 43-0%
+    else: result_message = "Procentuální hodnota je neplatná!"
+
     if (percentValue.is_integer()):
         # If the float is an integer, cut the decimal places
         percentValue = int(percentValue)
@@ -273,7 +291,7 @@ def endingScreen(answeredQuestions = 0, score = 0):
         # If not, round it to two decimal places
         percentValue = round(percentValue, 2)
 
-    print(f"Výsledky:\r\n\r\nPočet bodů: {score}/{answeredQuestions}\r\nÚspěšnost: {percentValue}%")
+    print(f"{result_message}\r\n\r\nPočet bodů: {score}/{answeredQuestions}\r\nÚspěšnost: {percentValue} %")
     pause()
     return
 

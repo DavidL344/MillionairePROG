@@ -291,7 +291,13 @@ def endingScreen(header_data, answeredQuestions = 0, score = 0):
         # If not, round it to two decimal places
         percentValue = round(percentValue, 2)
 
-    print(f"{result_message}\r\n\r\nPočet bodů: {score}/{answeredQuestions}\r\nÚspěšnost: {percentValue} %")
+    # Convert the value to the Czech locale (cs_CZ)
+    # * Both the percentage value and the percentage symbol have a space between them
+    # * A comma ',' is used as a decimal separator instead of a dot '.'
+    # Summary: https://www.localeplanet.com/icu/cs-CZ/index.html
+    percentValue = str(percentValue).replace('.', ',') + " "
+
+    print(f"{result_message}\r\n\r\nPočet bodů: {score}/{answeredQuestions}\r\nÚspěšnost: {percentValue}%")
     pause()
     return
 

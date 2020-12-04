@@ -174,6 +174,11 @@ def getQuestion(csv_questions, availableQuestions = []):
     for i in range(len(csv_questions[randomQuestionNumber])):
         csv_questions[randomQuestionNumber][i] = csv_questions[randomQuestionNumber][i][1:-1]
     
+    # This doesn't apply for the header data
+    if (randomQuestionNumber != 0):
+        # If the question contains multiple answers (at index 5), split them to an array
+        csv_questions[randomQuestionNumber][5] = csv_questions[randomQuestionNumber][5].split(',')
+
     # Return the question number as well as the question data
     return [randomQuestionNumber, csv_questions[randomQuestionNumber]]
 
@@ -266,7 +271,7 @@ def loadTheGame():
         questionAnswer = choice(textlines = ["[Skóre: " + str(score) + "]\r\n", "Otázka č." + str(questionNumber) + ": " + questionData[0], "a) " + questionData[1], "b) " + questionData[2], "c) " + questionData[3], "d) " + questionData[4]], choiceList = ["a", "b", "c", "d", "exit"], outputType = str)
         if not (questionAnswer == "exit"):
             answeredQuestions = questionNumber
-            if (questionAnswer == questionData[5]):
+            if (questionAnswer in questionData[5]):
                 score += 1
         else: break
     endingScreen(header_data, answeredQuestions, score)

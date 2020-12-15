@@ -212,6 +212,15 @@ def loadTheGame():
             if (convertQuestions()):
                 try:
                     csv_questions = loadQuestions()
+                    header_0 = getQuestion(csv_questions, [0])[1]
+                    header_data = [
+                        header_0[0], # The greeting message
+                        header_0[1], # Result: 100-87%
+                        header_0[2], # Result: 86-73%
+                        header_0[3], # Result: 72-58%
+                        header_0[4], # Result: 57-44%
+                        header_0[5]  # Result: 43-0%
+                    ]
                 except:
                     clearScreen()
                     print("Chyba: Po úspěšné konverzi není možné se souborem pracovat.")

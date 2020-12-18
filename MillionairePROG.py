@@ -182,15 +182,7 @@ def getQuestion(csv_questions, availableQuestions = []):
     # Return the question number as well as the question data
     return [randomQuestionNumber, csv_questions[randomQuestionNumber]]
 
-def loadTheGame():
-    clearScreen()
-    if not (path.exists(questions_encoded)):
-        if (path.exists(questions_decoded)):
-            if not (convertQuestions()): return
-        else:
-            if not (convertQuestions(f"Otázky nejsou k nalezení! Je třeba je nejprve importovat ze souboru '{questions_decoded}'.")): return
-        clearScreen()
-
+def prefetchData():
     try:
         # Load the questions at the beginning to prevent question injection later on that could manipulate the results
         csv_questions = loadQuestions()
@@ -205,29 +197,34 @@ def loadTheGame():
             header_0[4], # Result: 57-44%
             header_0[5]  # Result: 43-0%
         ]
+        return csv_questions, header_data
     except:
-        rebuildFile = choice(["Vypadá to, že soubor je poškozený. Chcete ho smazat a pokusit se ho znovu importovat (ano/ne)?"], ["ano", "ne", "exit"], str)
-        if (rebuildFile == "ano"):
-            remove(questions_encoded)
-            if (convertQuestions()):
-                try:
-                    csv_questions = loadQuestions()
-                    header_0 = getQuestion(csv_questions, [0])[1]
-                    header_data = [
-                        header_0[0], # The greeting message
-                        header_0[1], # Result: 100-87%
-                        header_0[2], # Result: 86-73%
-                        header_0[3], # Result: 72-58%
-                        header_0[4], # Result: 57-44%
-                        header_0[5]  # Result: 43-0%
-                    ]
-                except:
-                    clearScreen()
-                    print("Chyba: Po úspěšné konverzi není možné se souborem pracovat.")
-                    pause()
-                    return
-            else: return
-        else: return
+        return repairData()
+
+def repairData():
+    rebuildFile = choice(["Vypadá to, že soubor je poškozený. Chcete ho smazat a pokusit se ho znovu importovat (ano/ne)?"], ["ano", "ne", "exit"], str)
+    if (rebuildFile == "ano"):
+        remove(questions_encoded)
+        if (convertQuestions()):
+            try:
+                return prefetchData()
+            except:
+                return repairData()
+        else: return False, False
+    else: return False, False
+
+def loadTheGame():
+    clearScreen()
+    if not (path.exists(questions_encoded)):
+        if (path.exists(questions_decoded)):
+            if not (convertQuestions()): return
+        else:
+            if not (convertQuestions(f"Otázky nejsou k nalezení! Je třeba je nejprve importovat ze souboru '{questions_decoded}'.")): return
+        clearScreen()
+    
+    # Load the file in memory
+    csv_questions, header_data = prefetchData()
+    if (csv_questions == False) or (header_data == False): return
 
     while(True):
         clearScreen()

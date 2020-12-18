@@ -67,7 +67,7 @@ def convertVar(var, datatype):
             return float(var)
         elif (datatype == bool):
             return bool(var)
-    except:
+    except Exception:
         return var
 
 def EncoderTool(endecode, encodeType, value=questions_filename, returnWhere="memory"):
@@ -198,7 +198,7 @@ def prefetchData():
             header_0[5]  # Result: 43-0%
         ]
         return csv_questions, header_data
-    except:
+    except Exception:
         return repairData()
 
 def repairData():
@@ -208,7 +208,7 @@ def repairData():
         if (convertQuestions()):
             try:
                 return prefetchData()
-            except:
+            except Exception:
                 return repairData()
         else: return False, False
     else: return False, False
@@ -242,7 +242,7 @@ def loadTheGame():
                 answeredQuestions = 0
                 break
             else: continue
-        except: continue
+        except Exception: continue
 
     clearScreen()
     print(header_data[0])
@@ -322,4 +322,10 @@ def main():
         elif (menu == '#'):
             convertQuestions()
         continue
-main()
+try:
+    main()
+except KeyboardInterrupt:
+    clearScreen()
+    print("Aplikace byla na žádost uživatele vynuceně ukončena.\r\nPro správné ukončení aplikace slouží příkaz \"exit\".")
+    pause()
+    exit(1)
